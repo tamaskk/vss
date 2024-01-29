@@ -3,6 +3,7 @@ import { useState } from "react";
 import Logo from "../../assets/branding/square.png";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
+import Link from "next/link";
 
 const Loginform = () => {
   const [userData, setUserData] = useState({
@@ -10,8 +11,18 @@ const Loginform = () => {
     password: "",
   });
 
-  const loginHandler = () => {
-    console.log(userData);
+  const loginHandler = async () => {
+    const res = await fetch("api/auth/loginhandler", {
+      method: "POST",
+      body: JSON.stringify({ userData }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await res.json();
+
+    console.log(data);
   };
 
   return (
@@ -47,10 +58,10 @@ const Loginform = () => {
           length="full"
           onClick={loginHandler}
         />
-        <div className="text-gray-400 cursor-pointer hover:border-b hover:border-gray-400 transition-all duration-300">
+        <Link href="/register" className="text-gray-400 cursor-pointer hover:border-b hover:border-gray-400 transition-all duration-300">
           Not a member?{" "}
           <span className="text-[#a83ff9] font-bold">Register Now</span>
-        </div>
+        </Link>
       </div>
     </div>
   );
