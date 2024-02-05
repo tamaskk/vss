@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
 import bcrypt from "bcryptjs";
+import { connectToDatabase } from "@/db/connectToDB";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const { userData } = req.body;
@@ -36,9 +37,34 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     // Hash and salt the password before storing it in the database
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Check if the email exists in the database
+
+    const client = await connectToDatabase();
+
+    const db = client.db();
+
+    const users = db.collection("users");
+
+    const user = await users.findOne({ email: email });
+
+    if (!user) {
+        client.close();
+        return res.status(400).json({ error: "User does not exist" });
+    }
+
+    // Compare the hashed password with the stored password
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordMatch) {
+        client.close();
+        return res.status(400).json({ error: "Invalid password" });
+    }
+
+    client.close();
 
     // Return a JWT token upon successful registration or login
-    res.status(200).json({ data: { email, hashedPassword } });
+    res.status(200).json({ message: "Successfully logged in!" });
 };
 
 export default handler;
